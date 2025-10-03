@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "Monster.h"
 #include <memory>
+#include <optional>
 
 class Game {
 public:
@@ -11,8 +12,8 @@ private:
 	void showStartMenu();
 	void createCharacter();
 	void mainloop();
-	bool battle();
-	void postbattlevict();
+	std::optional<Weapon> battle();
+	void postbattlevict(const Weapon& droppedWeapon);
 	void lvlupscreen();
 	void weaponChoiseScreen(const Weapon& dropweapon);
 
