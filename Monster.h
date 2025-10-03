@@ -12,6 +12,6 @@ public:
 	void takeModeDamage(int incomingDamage, Obj_game& attack);
 
 private:
-	MonsterType MonsterType;
+	MonsterType monsterType;
 	Weapon loot;
 };

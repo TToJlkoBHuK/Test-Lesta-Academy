@@ -2,7 +2,7 @@
 
 //Character
 enum class CharacterClass {
-	ROUGE,
+	ROGUE,
 	WARRIOR,
 	BARBARIAN
 };
@@ -30,6 +30,6 @@ enum class MonsterType {
 	SKELETEN,
 	SLIME,
 	GHOST,
-	GLOEM,
+	GOLEM,
 	DRAGON
 };

@@ -21,5 +21,5 @@ private:
 	void applyStatBonus();
 
 	std::map<CharacterClass, int> classLvl;
-	int poisonDamageCount = 0; //rouge
+	int poisonDamageCount = 0; //ROGUE
 };
