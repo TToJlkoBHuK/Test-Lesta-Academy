@@ -171,6 +171,9 @@ void Game::lvlupscreen() {
     int choice;
     std::cin >> choice;
 
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
     std::string selectedClass;
     switch (choice) {
         case 1: selectedClass = "Rouge"; break;
@@ -187,6 +190,10 @@ void Game::weaponChoiseScreen(const Weapon& droppedWeapon) {
     std::cout << "Do you want to replace? (1 - y, 2 - n): ";
     int choice;
     std::cin >> choice;
+
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
     if (choice == 1) {
         player->equipWeapon(droppedWeapon);
         std::cout << "You epicured" << droppedWeapon.name << "!" << std::endl;
