@@ -30,7 +30,7 @@ void Game::showStartMenu() {
 void Game::createCharacter() {
 	std::cout << "\nChoice class:" << std::endl;
 	std::cout << "1. Rogue" << std::endl;
-	std::cout << "2. Warriour" << std::endl;
+	std::cout << "2. Warrior" << std::endl;
 	std::cout << "3. Barbarian" << std::endl;
 
 	int choice;
@@ -47,7 +47,7 @@ void Game::createCharacter() {
 	wins = 0;
 
 	std::cout << "\n--- You created new hero! ---" << std::endl;
-	std::cout << "Strength: " << player->getstrength() << ", Dexteity: " << player->getdexterity()
+	std::cout << "Strength: " << player->getstrength() << ", Dexterity: " << player->getdexterity()
 		<< ", Endurance: " << player->getendurance() << std::endl;
 	std::cout << "HP " << player->gethp() << "/" << player->getmaxhp() << std::endl;
 	std::cout << "Weapon: " << player->getweapon().name << " (damage: " << player->getweapon().damage << ")" << std::endl;
@@ -166,7 +166,7 @@ void Game::postbattlevict(const Weapon& droppedweapon) {
 void Game::lvlupscreen() {
     std::cout << "\nCoice class from up lvl:" << std::endl;
     std::cout << "1. Rogue" << std::endl;
-    std::cout << "2. Warriour" << std::endl;
+    std::cout << "2. Warrior" << std::endl;
     std::cout << "3. Barbarian" << std::endl;
     int choice;
     std::cin >> choice;
@@ -186,7 +186,7 @@ void Game::lvlupscreen() {
 
 void Game::weaponChoiseScreen(const Weapon& droppedWeapon) {
     std::cout << "\nMonster dropped weapon: " << droppedWeapon.name << " (damage: " << droppedWeapon.damage << ")" << std::endl;
-    std::cout << "Your weapon now: " << player->getweapon().name << " (damge: " << player->getweapon().damage << ")" << std::endl;
+    std::cout << "Your weapon now: " << player->getweapon().name << " (damage: " << player->getweapon().damage << ")" << std::endl;
     std::cout << "Do you want to replace? (1 - y, 2 - n): ";
     int choice;
     std::cin >> choice;
