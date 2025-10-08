@@ -36,14 +36,14 @@ void Game::createCharacter() {
 	int choice;
 	std::cin >> choice;
 
-	CharacterClass selectedClass;
+	std::unique_ptr<CharacterClass> selectedClass;
 	switch (choice) {
-		case 1: selectedClass = CharacterClass::ROGUE; break;
-		case 2: selectedClass = CharacterClass::WARRIOR; break;
-		case 3: selectedClass = CharacterClass::BARBARIAN; break;
-		default: selectedClass = CharacterClass::WARRIOR; break;
+		case 1: selectedClass = CharacterClassFactory::create("Rouge"); break;
+		case 2: selectedClass = CharacterClassFactory::create("Warrior"); break;
+		case 3: selectedClass = CharacterClassFactory::create("Barbarian"); break;
+		default: selectedClass = CharacterClassFactory::create("Warrior"); break;
 	}
-	player = std::make_unique<Player>(selectedClass);
+	player = std::make_unique<Player>(std::move(selectedClass));
 	wins = 0;
 
 	std::cout << "\n--- You created new hero! ---" << std::endl;
@@ -55,15 +55,15 @@ void Game::createCharacter() {
 
 void Game::mainloop() {
 	while (wins < 5) {
-		auto victory = battle();
-		if (victory) {
+		auto dropweapon = battle();
+		if (dropweapon) {
 			wins++;
 			std::cout << "\n*** Win! Monsters licvidated: " << wins << " from 5 ***" << std::endl;
 			if (wins == 5) {
 				std::cout << "\nYou end game!\n" << std::endl;
 				return;
 			}
-			postbattlevict(victory.value());
+			postbattlevict(dropweapon.value());
 		}
 		else {
 			std::cout << "\n--- You loser. Try again. ---\n" << std::endl;
@@ -73,24 +73,24 @@ void Game::mainloop() {
 }
 
 std::optional<Weapon> Game::battle() {
-    Monster monster(static_cast<MonsterType>(getRandom(0, 5)));
-    std::cout << "\n--- Start fight! Your enemy: " << monster.getName() << " ---" << std::endl;
+    auto monster = MonsterFactory::createRandomMonster();
+    std::cout << "\n--- Start fight! Your enemy: " << monster->getName() << " ---" << std::endl;
 
     Obj_game* attacker;
     Obj_game* defender;
-    if (player->getdexterity() >= monster.getdexterity()) {
+    if (player->getdexterity() >= monster->getdexterity()) {
         attacker = player.get();
-        defender = &monster;
+        defender = monster.get();
     }
     else {
-        attacker = &monster;
+        attacker = monster.get();
         defender = player.get();
     }
 
     int turn = 1;
-    while (player->isAlive() && monster.isAlive()) {
+    while (player->isAlive() && monster->isAlive()) {
         std::cout << "\n--- motion " << turn << " ---" << std::endl;
-        std::cout << "hp player: " << player->gethp() << " | hp monster: " << monster.gethp() << std::endl;
+        std::cout << "hp player: " << player->gethp() << " | hp monster: " << monster->gethp() << std::endl;
 
         std::cout << attacker->getName() << " attack " << defender->getName() << "!" << std::endl;
         int hitChanceRoll = getRandom(1, attacker->getdexterity() + defender->getdexterity());
@@ -139,7 +139,7 @@ std::optional<Weapon> Game::battle() {
     }
 
     if (player->isAlive()) {
-        return monster.getloot();
+        return monster->getloot();
     }
     else {
         return std::nullopt;
@@ -171,12 +171,12 @@ void Game::lvlupscreen() {
     int choice;
     std::cin >> choice;
 
-    CharacterClass selectedClass;
+    std::string selectedClass;
     switch (choice) {
-    case 1: selectedClass = CharacterClass::ROGUE; break;
-    case 2: selectedClass = CharacterClass::WARRIOR; break;
-    case 3: selectedClass = CharacterClass::BARBARIAN; break;
-    default: return;
+        case 1: selectedClass = "Rouge"; break;
+        case 2: selectedClass = "Warrior"; break;
+        case 3: selectedClass = "Barbarian"; break;
+        default: selectedClass = "Warrior"; break;
     }
     player->lvlup(selectedClass);
 }

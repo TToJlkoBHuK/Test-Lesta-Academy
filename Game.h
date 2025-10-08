@@ -6,6 +6,14 @@
 
 class Game {
 public:
+	Game() = default;
+	~Game() = default;
+
+	Game(const Game&) = delete;
+	Game& operator = (const Game&) = delete;
+	Game(Game&&) noexcept = default;
+	Game& operator = (Game&&) noexcept = default;
+
 	void run();
 
 private:
