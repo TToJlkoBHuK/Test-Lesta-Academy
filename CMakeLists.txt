@@ -12,6 +12,10 @@ set(SOURCES
     Monster.cpp
     obj_game.cpp
     Player.cpp
+    WeaponType.cpp
+    DamageType.cpp
+    TypeRegistry.cpp
+    CharacterClass.cpp
 )
 
 add_executable(RPG ${SOURCES})
