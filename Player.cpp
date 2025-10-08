@@ -2,74 +2,59 @@
 #include "Utils.h"
 #include <iostream>
 
-Player::Player(CharacterClass startClass) {
-	initNewPlayer(startClass);
-}
-
-void Player::initNewPlayer(CharacterClass startClass) {
+Player::Player(std::unique_ptr<CharacterClass> startClass) {
 	name = "Player";
-	strength = getRandom(1, 3);
-	dexterity = getRandom(1, 3);
-	endurance = getRandom(1, 3);
-	classLvl.clear();
-	classLvl[startClass] = 1;
-	applyStatBonus();
+	baseStrenght = getRandom(1, 3);
+	baseDexterity = getRandom(1, 3);
+	baseEndurance = getRandom(1, 3);
+
+	std::string className = startClass->getName();
+	currentWeapon = startClass->getStartWeapon();
+	classLvl[className] = {std::move(startClass), 1};
+
+	applyAllBonus();
 }
 
-void Player::applyStatBonus() {
-	int bonusstr = 0, bonusdex = 0, bonusend = 0;
-	int basehp = 0;
+void Player::applyAllBonus() {
+	strength = baseStrenght;
+	dexterity = baseDexterity;
+	endurance = baseEndurance;
+	int bonusStr = 0, bonusDex = 0, bonusEnd = 0, baseHp = 0;
 
-	//start baff
-	if (classLvl[CharacterClass::ROGUE] >= 2) bonusdex += 1;
-	if (classLvl[CharacterClass::WARRIOR] >= 3) bonusdex += 1;
-	if (classLvl[CharacterClass::BARBARIAN] >= 3) bonusdex += 1;
-
-	strength += bonusstr;
-	dexterity += bonusdex;
-	endurance += bonusend;
-
-	if (currentWeapon.name.empty()) {
-		if (classLvl.count(CharacterClass::ROGUE)) {
-			currentWeapon = { "Dagger", 2, DamageType::PIERCING, WeaponType::DAGGER };
-
-		}
-		else if (classLvl.count(CharacterClass::WARRIOR)) {
-			currentWeapon = { "Sword", 3, DamageType::SLASHING, WeaponType::SWORD };
-		}
-		else {
-			currentWeapon = { "Club", 3, DamageType::BLUDGEONING, WeaponType::CLUB };
-		}
+	for (auto const& [name, data] : classLvl) {
+		const auto& [classPtr, lvl] = data;
+		classPtr->applyStatBonus(lvl, bonusStr, bonusDex, bonusEnd);
+		baseHp += classPtr->getBaseHPLvl() * lvl;
 	}
 
-	for (auto const& [key, val] : classLvl) {
-		if (val > 0) {
-			if (key == CharacterClass::ROGUE) basehp += 4 * val;
-			if (key == CharacterClass::WARRIOR) basehp += 5 * val;
-			if (key == CharacterClass::BARBARIAN) basehp += 6 * val;
-		}
+	strength += bonusStr;
+	dexterity += bonusDex;
+	endurance += bonusEnd;
 
-		maxhp = basehp + endurance;
-		hp = maxhp;
-	}
+	maxhp = baseHp + endurance;
+	hp = maxhp;
 }
 
-void Player::lvlup(CharacterClass choice) {
-	if (getTotallvl() < 3) {
-		classLvl[choice]++;
-		applyStatBonus();
-		std::cout << "Lvl UP! You are: ";
-		for (auto const& [key, val] : classLvl) {
-			if (val > 0) {
-				std::string className;
-				if (key == CharacterClass::ROGUE) className = "ROGUE";
-				if (key == CharacterClass::WARRIOR) className = "Warrior";
-				if (key == CharacterClass::BARBARIAN) className = "Barbarian";
-				std::cout << className << " " << val << " ";
-			}
-		}
-		std::cout << std::endl;
+void Player::lvlup(const std::string& className) {
+	if (getTotallvl() >= 3) return;
+
+	if (classLvl.count(className)) {
+		classLvl[className].second++;
 	}
+	else {
+		auto newClass = CharacterClassFactory::create(className);
+		if (newClass) {
+			classLvl[className] = { std::move(newClass), 1 };
+		}
+	}
+
+	applyAllBonus();
+
+	std::cout << "Lvl UP! You are: ";
+	for (auto const& [name, data] : classLvl) {
+		std::cout << name << " " << data.second << " ";
+	}
+	std::cout << std::endl;
 }
 
 void Player::equipWeapon(const Weapon& newWeapon) {
@@ -83,8 +68,8 @@ void Player::fullheal() {
 
 int Player::getTotallvl() const {
 	int total = 0;
-	for (auto const& [key, val] : classLvl) {
-		total += val;
+	for (auto const& [name, data] : classLvl) {
+		total += data.second;
 	}
 	return total;
 }
@@ -95,26 +80,9 @@ int Player::calcBaseDamage(Obj_game& targer) {
 
 int Player::applyDamageMode(int baseDamage, Obj_game& target, int turn) {
 	int modifDmg = baseDamage;
-
-	// ROGUE 1
-	if (classLvl[CharacterClass::ROGUE] >= 1 && dexterity > target.getdexterity()) {
-		modifDmg += 1;
-	}
-
-	// ROGUE 3
-	if (classLvl[CharacterClass::ROGUE] >= 3 && turn > 1) {
-		poisonDamageCount++;
-		modifDmg += poisonDamageCount;
-	}
-
-	// warrior 1
-	if (classLvl[CharacterClass::WARRIOR] >= 1 && turn == 1) {
-		modifDmg += currentWeapon.damage;
-	}
-	// barbarian 1
-	if (classLvl[CharacterClass::BARBARIAN] >= 1) {
-		if (turn <= 3) modifDmg += 2;
-		else modifDmg -= 1;
+	for (auto const& [name, data] : classLvl) {
+		const auto& [classPtr, lvl] = data;
+		modifDmg = classPtr->applyDmgBonus(modifDmg, lvl, *this, target, turn);
 	}
 
 	return modifDmg;
@@ -122,15 +90,9 @@ int Player::applyDamageMode(int baseDamage, Obj_game& target, int turn) {
 
 void Player::takeModeDamage(int incomingDmg, Obj_game& attaker, int turn) {
 	int finalDmg = incomingDmg;
-
-	//warrior 2
-	if (classLvl[CharacterClass::WARRIOR] >= 2 && strength > attaker.getstrength()) {
-		finalDmg -= 3;
-	}
-
-	// barbarian 2
-	if (classLvl[CharacterClass::BARBARIAN] >= 2) {
-		finalDmg -= endurance;
+	for (auto const& [name, data] : classLvl) {
+		const auto& [classPtr, lvl] = data;
+		finalDmg = classPtr->applyDefBonus(finalDmg, lvl, *this, attaker, turn);
 	}
 
 	takeDamage(finalDmg);

@@ -1,15 +1,17 @@
 #pragma once
 #include "obj_game.h"
-#include "Enum.h"
+#include "CharacterClass.h"
 #include <map>
+#include <string>
 
 class Player : public Obj_game {
 public:
-	Player(CharacterClass startClass);
-	void lvlup(CharacterClass choise);
+	Player(std::unique_ptr<CharacterClass> startClass);
+	void lvlup(const std::string& className);
 	void equipWeapon(const Weapon& newWeapon);
 	void fullheal();
 	int getTotallvl() const;
+	int incrementAndGetPoisionCount() { return ++poisonDamageCount; }
 
 	//fight logical
 	int calcBaseDamage(Obj_game& target);
@@ -17,9 +19,11 @@ public:
 	void takeModeDamage(int incomingDamge, Obj_game& target, int turn);
 
 private:
-	void initNewPlayer(CharacterClass startClass);
-	void applyStatBonus();
+	void applyAllBonus();
+	std::map<std::string, std::pair<std::unique_ptr<CharacterClass>, int>> classLvl;
 
-	std::map<CharacterClass, int> classLvl;
+	int baseStrenght = 0;
+	int baseDexterity = 0;
+	int baseEndurance = 0;
 	int poisonDamageCount = 0; //ROGUE
 };
